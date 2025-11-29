@@ -1,7 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import styled from 'styled-components';
 import { COLORS, BREAKPOINTS } from '../styles/GlobalStyles';
-import { Link } from 'react-router-dom';
 
 // --- 1. Reusable Styled Components ---
 
@@ -11,8 +10,9 @@ const Container = styled.div`
   margin: 0 auto;
 `;
 
-// Define a common style for all buttons
-const Button = styled(Link)`
+
+// Remove Link-based Button and provide button + anchor variants
+const Button = styled.button`
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -41,6 +41,58 @@ const Button = styled(Link)`
     &:hover {
       border-color: ${COLORS.primary};
       color: ${COLORS.primary};
+    }
+  }
+
+  &.white-outline {
+    background-color: transparent;
+    border: 1px solid ${COLORS.textLight};
+    color: ${COLORS.textLight};
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+  }
+`;
+
+// Anchor-styled button for navigation (safe without Router)
+const AnchorButton = styled.a`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+  font-size: 1rem;
+  min-width: 160px;
+  text-decoration: none;
+
+  &.primary {
+    background-color: ${COLORS.primary};
+    color: ${COLORS.textLight};
+    &:hover {
+      background-color: ${COLORS.primaryDark};
+    }
+  }
+
+  &.secondary {
+    background-color: transparent;
+    border: 1px solid ${COLORS.border};
+    color: ${COLORS.textDark};
+    &:hover {
+      border-color: ${COLORS.primary};
+      color: ${COLORS.primary};
+    }
+  }
+
+  &.white-outline {
+    background-color: transparent;
+    border: 1px solid ${COLORS.textLight};
+    color: ${COLORS.textLight};
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.1);
     }
   }
 `;
@@ -78,36 +130,90 @@ const HeaderContainer = styled.header`
 
   ${Container} {
     display: flex;
-    justify-content: flex-end; 
+    justify-content: space-between; /* changed to distribute logo / nav / user */
     align-items: center;
+    gap: 20px;
   }
 `;
 
-const NavList = styled.ul`
-    list-style: none;
-    display: flex;
-    align-items: center;
+/* New header/menu styled components */
+const Logo = styled.a`
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: ${COLORS.primary};
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
 `;
 
-const MenuIcon = styled.img`
-    margin-right: 15px; 
-    cursor: pointer;
-    width: 45px; 
-    height: 45px;
+const Nav = styled.nav`
+  flex: 1;
+  display: flex;
+  justify-content: center;
 `;
 
-const TopRightButton = styled.button`
-    background-color: #F3F4F6;
-    color: #374151;
-    border: none;
-    border-radius: 6px;
-    padding: 8px 12px;
-    font-size: 0.85rem;
-    font-weight: 500;
-    cursor: pointer;
-    &:hover {
-        background-color: #E5E7EB;
-    }
+const NavListCompact = styled.ul`
+  list-style: none;
+  display: flex;
+  gap: 22px;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+`;
+
+const NavLink = styled.a`
+  color: ${COLORS.textDark};
+  text-decoration: none;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 8px;
+
+  &:hover {
+    background-color: rgba(0,0,0,0.03);
+    color: ${COLORS.primary};
+  }
+`;
+
+const NavIcon = styled.span`
+  display: inline-flex;
+  width: 18px;
+  height: 18px;
+  align-items: center;
+  justify-content: center;
+  svg { width: 18px; height: 18px; }
+`;
+
+const UserSection = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 14px;
+`;
+
+const UserName = styled.div`
+  text-align: right;
+  font-weight: 600;
+  color: ${COLORS.textDark};
+  font-size: 0.95rem;
+  & small { display: block; font-weight: 400; color: #6B7280; font-size: 0.8rem; }
+`;
+
+const RoleButtons = styled.div`
+  display: flex;
+  gap: 8px;
+`;
+
+const RoleButton = styled.button`
+  padding: 6px 10px;
+  border-radius: 10px;
+  border: 1px solid ${COLORS.border};
+  background: ${props => props.active ? COLORS.textDark : 'transparent'};
+  color: ${props => props.active ? COLORS.textLight : COLORS.textDark};
+  cursor: pointer;
+  font-size: 0.85rem;
 `;
 
 // --- 3. Hero Section Components ---
@@ -265,18 +371,65 @@ const FooterContainer = styled.footer`
 // --- 6. The Main Component ---
 
 const Main = () => { // COMPONENT NAME CHANGED TO 'Main'
+    const [activeRole, setActiveRole] = useState('patient'); // new local role state for header badge
+
     return (
         <>
             <HeaderContainer>
                 <Container>
-                    <div className="top-bar-placeholder"></div> 
-                    <nav>
-                        <NavList>
-                            <li className="nav-item">
-                                <MenuIcon src="Menu.jpg" alt="Menu" width="100" height="100" />
+                    {/* Left: Logo */}
+                    <Logo href="/">MediCare Connect</Logo>
+
+                    {/* Center: Navigation */}
+                    <Nav aria-label="Main navigation">
+                        <NavListCompact>
+                            <li>
+                                <NavLink href="#">
+                                    <NavIcon>
+                                        {/* simple dashboard icon */}
+                                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zM13 21h8V11h-8v10zM13 3v6h8V3h-8z" fill="currentColor"/></svg>
+                                    </NavIcon>
+                                    Dashboard
+                                </NavLink>
                             </li>
-                        </NavList>
-                    </nav>
+
+                            <li>
+                                <NavLink href="#appointments">
+                                    <NavIcon>
+                                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7 10h10v2H7zM7 14h7v2H7zM19 4h-1V2h-2v2H8V2H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2z" fill="currentColor"/></svg>
+                                    </NavIcon>
+                                    Appointments
+                                </NavLink>
+                            </li>
+
+                            <li>
+                                <NavLink href="#records">
+                                    <NavIcon>
+                                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M20 6H4v12h16V6zM8 10h8v2H8v-2z" fill="currentColor"/></svg>
+                                    </NavIcon>
+                                    Records
+                                </NavLink>
+                            </li>
+
+                            <li>
+                                <NavLink href="#prescriptions">
+                                    <NavIcon>
+                                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2L3 6v6c0 5 3.8 9.7 9 10 5.2-.3 9-5 9-10V6l-9-4z" fill="currentColor"/></svg>
+                                    </NavIcon>
+                                    Prescriptions
+                                </NavLink>
+                            </li>
+                        </NavListCompact>
+                    </Nav>
+
+                   
+                        <RoleButtons>
+                            <RoleButton active={activeRole === 'patient'} type="button" onClick={() => setActiveRole('patient')}>Patient</RoleButton>
+                            <RoleButton active={activeRole === 'doctor'} type="button" onClick={() => setActiveRole('doctor')}>Doctor</RoleButton>
+                            <RoleButton active={activeRole === 'pharmacist'} type="button" onClick={() => setActiveRole('pharmacist')}>Pharmacist</RoleButton>
+                            <RoleButton active={activeRole === 'administrator'} type="button" onClick={() => setActiveRole('administrator')}>Admin</RoleButton>
+                        </RoleButtons>
+                    
                 </Container>
             </HeaderContainer>
 
@@ -290,26 +443,29 @@ const Main = () => { // COMPONENT NAME CHANGED TO 'Main'
                             <HeroTitle>Your Health, <span className="highlight">Virtually Connected</span></HeroTitle>
                             <HeroDescription>Experience the future of healthcare with our comprehensive online medical system. Book virtual consultations, access your medical records, and manage prescriptions all in one secure platform.</HeroDescription>
                             <HeroActions>
-                                <Button to="/login" className="primary">Get Started Today</Button> 
-                                <Button as="button" className="secondary">Learn More</Button> 
+                                {/* navigation uses anchor to avoid relying on Router at render time */}
+                                <AnchorButton href="/login" className="primary">Get Started Today</AnchorButton> 
+                                {/* native button; ensure type provided */}
+                                <Button type="button" className="secondary">Learn More</Button> 
                             </HeroActions>
                             <HeroStats>
                                 <StatItem>
-                                    <StatIcon src="hpiaa.jpg" alt="HIPAA Compliant" width="32" height="32" />
+                                    <StatIcon src="/hpiaa.jpg" alt="HIPAA Compliant" />
                                     <span>HIPAA Compliant</span>
                                 </StatItem>
                                 <StatItem>
-                                    <StatIcon src="clock.jpg" alt="24/7 Available" width="32" height="32" />
+                                    <StatIcon src="/clock.jpg" alt="24/7 Available" />
                                     <span>24/7 Available</span>
                                 </StatItem>
                                 <StatItem>
-                                    <StatIcon src="users.jpg" alt="2,500+ Users" width="32" height="32" />
+                                    <StatIcon src="/users.jpg" alt="2,500+ Users" />
                                     <span>2,500+ Users</span>
                                 </StatItem>
                             </HeroStats>
                         </HeroContent>
                         <HeroImage>
-                            <img src="medicalsystem.jpg" alt="Doctor showing X-ray to patient" />
+                            {/* public image path */}
+                            <img src="/medicalsystem.jpg" alt="Doctor showing X-ray to patient" />
                         </HeroImage>
                     </Container>
                 </HeroSection>
@@ -326,8 +482,8 @@ const Main = () => { // COMPONENT NAME CHANGED TO 'Main'
                             Join thousands of users who have already made the switch to virtual healthcare. Start your journey today with our secure, comprehensive medical platform.
                         </CtaDescription>
                         <CtaButtons>
-                            <Button to="/login" className="primary">Start Free Trial</Button>
-                            <Button as="button" className="white-outline">Book a Demo</Button> 
+                            <AnchorButton href="/login" className="primary">Start Free Trial</AnchorButton>
+                            <Button type="button" className="white-outline">Book a Demo</Button> 
                         </CtaButtons>
                     </Container>
                 </CtaBanner>
@@ -336,7 +492,7 @@ const Main = () => { // COMPONENT NAME CHANGED TO 'Main'
             {/* FOOTER */}
             <FooterContainer>
                 <Container>
-                    <p>&copy; 2025 MediCare Connect. All rights reserved.</p>
+                    <p>&copy; {new Date().getFullYear()} MediCare Connect. All rights reserved.</p>
                     <div className="footer-links">
                         <a href="#">Privacy Policy</a>
                         <a href="#">Terms of Service</a>
@@ -347,4 +503,4 @@ const Main = () => { // COMPONENT NAME CHANGED TO 'Main'
     );
 };
 
-export default Main; 
+export default Main;

@@ -1,7 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import styled from 'styled-components';
 import { COLORS, BREAKPOINTS } from '../styles/GlobalStyles';
-import { Link } from 'react-router-dom';
 
 // --- 1. Styled Components ---
 
@@ -31,7 +30,7 @@ const LoginContainerWrapper = styled.div`
   align-items: center;
 `;
 
-const BackToHome = styled(Link)`
+const BackToHome = styled.a`
   display: flex;
   align-items: center;
   gap: 8px;
@@ -103,15 +102,15 @@ const FormField = styled.input`
   }
 `;
 
-const RoleSelect = styled.select`
-  ${FormField}
+// replace RoleSelect definition with this safe extension of FormField
+const RoleSelect = styled(FormField).attrs({ as: 'select' })`
   /* Custom select arrow added via background-image */
   appearance: none;
   -webkit-appearance: none;
   background-image: url('data:image/svg+xml;utf8,<svg fill="%239CA3AF" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>');
   background-repeat: no-repeat;
   background-position: right 10px center;
-  padding-right: 40px; 
+  padding-right: 40px;
 `;
 
 const PasswordInputWrapper = styled.div`
@@ -147,7 +146,7 @@ const SignInButton = styled.button`
   }
 `;
 
-const ForgotPasswordLink = styled(Link)`
+const ForgotPasswordLink = styled.a`
   display: block;
   text-align: right;
   font-size: 0.9rem;
@@ -209,11 +208,14 @@ const DemoButton = styled.button`
 // --- 2. The Component ---
 
 const LoginPage = () => {
+  const [role, setRole] = useState('patient'); // default to patient
+  const [email, setEmail] = useState('');
+
   return (
     <LoginBody>
       <LoginContainerWrapper>
         {/* Link back to the home page */}
-        <BackToHome to="/">
+        <BackToHome href="/">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M15 18L9 12L15 6" stroke="#4B5563" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
@@ -231,10 +233,24 @@ const LoginPage = () => {
             <LoginSubtitle>Sign in to your MediCare Connect account</LoginSubtitle>
           </LoginHeader>
 
-          <form onSubmit={(e) => e.preventDefault()}>
+          <form onSubmit={(e) => {
+            e.preventDefault();
+            const payload = { email, role };
+            sessionStorage.setItem('user', JSON.stringify(payload));
+            // set flag so the app can play the entry animation on the next page
+            sessionStorage.setItem('entry_animation', 'true');
+            if (role === 'doctor') {
+              window.location.href = '/doctor';
+            } else if (role === 'pharmacist') {
+              window.location.href = '/pharmacist';
+            } else if (role === 'administrator') {
+              window.location.href = '/admin';
+            } else {
+              window.location.href = '/patient';
+            }
+          }}>
             <FormLabel htmlFor="role-select">I am a</FormLabel>
-            <RoleSelect id="role-select" name="role">
-              <option value="">Select your role</option>
+            <RoleSelect id="role-select" name="role" value={role} onChange={(e) => setRole(e.target.value)}>
               <option value="patient">Patient</option>
               <option value="doctor">Doctor</option>
               <option value="pharmacist">Pharmacist</option>
@@ -242,7 +258,14 @@ const LoginPage = () => {
             </RoleSelect>
 
             <FormLabel htmlFor="email">Email</FormLabel>
-            <FormField type="email" id="email" placeholder="Enter your email" required />
+            <FormField
+              type="email"
+              id="email"
+              placeholder="Enter your email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
 
             <FormLabel htmlFor="password">Password</FormLabel>
             <PasswordInputWrapper>
@@ -258,15 +281,43 @@ const LoginPage = () => {
             <SignInButton type="submit">Sign In</SignInButton>
           </form>
 
-          <ForgotPasswordLink to="#">Forgot your password?</ForgotPasswordLink>
+          <ForgotPasswordLink href="#">Forgot your password?</ForgotPasswordLink>
           
           <DemoAccess>
             <Divider><span>or</span></Divider>
             <p>Quick Demo Access</p>
             <DemoButtons>
-              <DemoButton>Demo Patient</DemoButton>
-              <DemoButton>Demo Doctor</DemoButton>
-              <DemoButton>Demo Pharmacist</DemoButton>
+              <DemoButton onClick={() => {
+                const payload = { email: 'demo.patient@example.com', role: 'patient' };
+                sessionStorage.setItem('user', JSON.stringify(payload));
+                sessionStorage.setItem('entry_animation', 'true');
+                window.location.href = '/patient';
+              }}>Demo Patient</DemoButton>
+
+              <DemoButton onClick={() => {
+                setRole('doctor');
+                const payload = { email: 'demo.doctor@example.com', role: 'doctor' };
+                sessionStorage.setItem('user', JSON.stringify(payload));
+                sessionStorage.setItem('entry_animation', 'true');
+                window.location.href = '/doctor';
+              }}>Demo Doctor</DemoButton>
+
+              <DemoButton onClick={() => {
+                setRole('pharmacist');
+                const payload = { email: 'demo.pharmacist@example.com', role: 'pharmacist', name: 'Alex Martinez' };
+                sessionStorage.setItem('user', JSON.stringify(payload));
+                sessionStorage.setItem('entry_animation', 'true');
+                window.location.href = '/pharmacist';
+              }}>Demo Pharmacist</DemoButton>
+
+              {/* Demo Admin */}
+              <DemoButton onClick={() => {
+                setRole('administrator');
+                const payload = { email: 'admin@example.com', role: 'administrator', name: 'System Admin' };
+                sessionStorage.setItem('user', JSON.stringify(payload));
+                sessionStorage.setItem('entry_animation', 'true');
+                window.location.href = '/admin';
+              }}>Demo Admin</DemoButton>
             </DemoButtons>
           </DemoAccess>
         </LoginCard>
